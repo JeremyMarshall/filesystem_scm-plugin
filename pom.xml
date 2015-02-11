@@ -5,7 +5,6 @@
      <groupId>org.jenkins-ci.plugins</groupId>
      <artifactId>plugin</artifactId> 
      <version>1.595</version>
-     <version>1.466</version>
   </parent>
       
   <groupId>hudson.plugins.filesystem_scm</groupId>

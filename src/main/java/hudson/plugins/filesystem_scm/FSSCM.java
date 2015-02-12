@@ -17,10 +17,7 @@ import hudson.scm.PollingResult;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMRevisionState;
-import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -65,7 +62,6 @@ public class FSSCM extends SCM {
     private List<Wildcard> wildcards;
     private String filterType;
 	
-	// Don't use DataBoundConsturctor, it is still not mature enough, many HTML form elements are not binded
 	@DataBoundConstructor
     public FSSCM(String path, String localPath, boolean clearWorkspace, boolean copyHidden, boolean filterEnabled, String filterType, List<Wildcard> wildcards) {
         this.path = path;
@@ -77,18 +73,20 @@ public class FSSCM extends SCM {
         this.filterType = filterType;
         this.wildcards = wildcards;
     }
-    
-	public String getPath() {
+
+    @Deprecated
+    public FSSCM(String path, boolean clearWorkspace, boolean copyHidden, boolean filterEnabled, boolean includeFilter, String[] filters) {
+        this(path, ".", clearWorkspace, copyHidden, filterEnabled, includeFilter?"include":"exclude", Wildcard.fromArray(filters));
+    }
+
+    public String getPath() {
 		return path;
 	}
 
     public String getLocalPath() {
         return localPath;
     }
-    @Deprecated
-	public String[] getFilters() {
-		return filters;
-	}
+
 
     public List<Wildcard> getWildcards() {
         return wildcards;
@@ -101,11 +99,6 @@ public class FSSCM extends SCM {
 	public boolean isFilterEnabled() {
 		return filterEnabled;
 	}
-
-    @Deprecated
-	public boolean isIncludeFilter() {
-		return includeFilter;
-	}
 	
 	public boolean isClearWorkspace() {
 		return clearWorkspace;
@@ -114,7 +107,43 @@ public class FSSCM extends SCM {
 	public boolean isCopyHidden() {
 		return copyHidden;
 	}
-	
+
+    // compatibility with earlier plugins
+    public Object readResolve() {
+        if ( isFilterEnabled() && getFilterType() == null){
+            if (includeFilter) {
+                filterType = "include";
+            } else {
+                filterType = "exclude";
+            }
+        }
+        if ( isFilterEnabled() && wildcards == null && filters != null ) {
+            wildcards = Wildcard.fromArray(filters);
+        }
+        return this;
+    }
+
+    //these are deprecated so point them to the new
+    //properties
+    @Deprecated
+    public String[] getFilters() {
+        //return filters;
+
+        String ret[] = new String[wildcards.size()];
+        int i = 0;
+
+        for(Wildcard w : wildcards) {
+            ret[i++] = w.getFilter();
+        }
+        return ret;
+    }
+
+    @Deprecated public boolean isIncludeFilter() {
+        //return includeFilter;
+        return filterType.equals("include");
+    }
+
+
     @Override
 	public boolean checkout(AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) 
 	throws IOException, InterruptedException {
@@ -255,8 +284,11 @@ public class FSSCM extends SCM {
 		diff.setIgnoreHidden(!copyHidden);
 		
 		if ( filterEnabled ) {
-			if ( includeFilter ) diff.setIncludeFilter(filters);
-			else diff.setExcludeFilter(filters);
+			if ( filterType.equals("include") ) {
+                diff.setIncludeFilter(wildcards);
+            } else {
+                diff.setExcludeFilter(wildcards);
+            }
 		}		
 		
 		diff.setAllowDeleteList(allowDeleteList);

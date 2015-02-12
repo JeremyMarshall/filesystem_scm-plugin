@@ -7,6 +7,9 @@ import hudson.util.FormValidation;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by jeremymarshall on 11/02/2015.
  */
@@ -22,6 +25,16 @@ public class Wildcard extends AbstractDescribableImpl<Wildcard> {
 
     public String getFilter() {
         return filter;
+    }
+
+    public static List<Wildcard> fromArray(String a[]){
+        List<Wildcard> ret = new ArrayList<Wildcard>();
+
+        for( String s : a) {
+            ret.add(new Wildcard(s));
+        }
+
+        return ret;
     }
 
     @Extension

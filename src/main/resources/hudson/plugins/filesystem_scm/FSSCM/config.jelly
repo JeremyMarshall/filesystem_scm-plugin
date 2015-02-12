@@ -17,14 +17,12 @@
   </f:entry>
 
   <f:optionalBlock inline="true" field="filterEnabled" title="Filters">
-    <f:block>
-        <f:entry field="filterType" title="Include or Exclude">
-            <f:select default="include"/>
-        </f:entry>
+    <f:entry field="filterType" title="Include or Exclude">
+        <f:select default="include"/>
+    </f:entry>
 
-        <f:entry>
-            <f:repeatableProperty field="wildcards" minimum="1"/>
-        </f:entry>
-    </f:block>
+    <f:entry>
+        <f:repeatableProperty field="wildcards" minimum="1"/>
+    </f:entry>
   </f:optionalBlock>
 </j:jelly>

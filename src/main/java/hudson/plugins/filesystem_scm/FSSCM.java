@@ -1,15 +1,12 @@
 package hudson.plugins.filesystem_scm;
 
-import java.io.*;
-import java.util.*;
-
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scm.ChangeLogParser;
@@ -20,7 +17,15 @@ import hudson.scm.SCMRevisionState;
 import hudson.util.ListBoxModel;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.List;
+import java.util.Set;
 
 /**
  * {@link SCM} implementation which watches a file system folder.
@@ -218,7 +223,7 @@ public class FSSCM extends SCM {
 	 *   <li>file deleted since last build time, we have to compare source and destination folder</li>
 	 * </ul>
 	 */
-	private boolean poll(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) 
+	private boolean poll(Job<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener)
 	    throws IOException, InterruptedException {
 		
 		long start = System.currentTimeMillis();
@@ -227,7 +232,7 @@ public class FSSCM extends SCM {
 
 		String expandedPath = path;
 
-		AbstractBuild<?,?> lastCompletedBuild = project.getLastCompletedBuild();
+		Run<?,?> lastCompletedBuild = project.getLastCompletedBuild();
 
 		if (lastCompletedBuild != null){
 			EnvVars env = lastCompletedBuild.getEnvironment(listener);
@@ -260,11 +265,11 @@ public class FSSCM extends SCM {
 		log.println("FSSCM.poolChange completed in " + formatDuration(System.currentTimeMillis()-start));		
 		return changed;
 	}
-    private void setupRemoteFolderDiff(RemoteFolderDiff diff, AbstractProject project, Set<String> allowDeleteList){
+    private void setupRemoteFolderDiff(RemoteFolderDiff diff, Job<?,?> project, Set<String> allowDeleteList){
 	    setupRemoteFolderDiff(diff, project, allowDeleteList, path);
     }
 	@SuppressWarnings("rawtypes")
-    private void setupRemoteFolderDiff(RemoteFolderDiff diff, AbstractProject project, Set<String> allowDeleteList, String expandedPath) {
+    private void setupRemoteFolderDiff(RemoteFolderDiff diff, Job<?,?> project, Set<String> allowDeleteList, String expandedPath) {
 		Run lastBuild = project.getLastBuild();
 		if ( null == lastBuild ) {
 			diff.setLastBuildTime(0);
@@ -307,8 +312,16 @@ public class FSSCM extends SCM {
 	}
 
     @Override
-    public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?, ?> build,
-            Launcher launcher, TaskListener listener) throws IOException,
+    @CheckForNull
+    public SCMRevisionState calcRevisionsFromBuild(@Nonnull
+                                                   Run<?,?> build,
+                                                   @Nullable
+                                                   FilePath workspace,
+                                                   @Nullable
+                                                   Launcher launcher,
+                                                   @Nonnull
+                                                   TaskListener listener)
+            throws IOException,
             InterruptedException {
         // we cannot really calculate a sensible revision state for a filesystem folder
         // therefore we return NONE and simply ignore the baseline in compareRemoteRevisionWith
@@ -316,11 +329,7 @@ public class FSSCM extends SCM {
     }
 
     @Override
-    protected PollingResult compareRemoteRevisionWith(
-            AbstractProject<?, ?> project, Launcher launcher,
-            FilePath workspace, TaskListener listener, SCMRevisionState baseline)
-            throws IOException, InterruptedException {
-        
+    public PollingResult compareRemoteRevisionWith(Job<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
         if(poll(project, launcher, workspace, listener)) {
             return PollingResult.SIGNIFICANT;
         } else {

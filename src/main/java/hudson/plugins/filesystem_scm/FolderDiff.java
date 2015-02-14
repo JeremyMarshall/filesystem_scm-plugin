@@ -28,7 +28,7 @@ public class FolderDiff implements Serializable {
 	private boolean ignoreHidden;
 	private boolean filterEnabled;
 	private boolean includeFilter;
-	private String[] filters;
+	private List<Wildcard> filters;
 	private Set<String> allowDeleteList;
 	
 	public FolderDiff() {
@@ -47,13 +47,13 @@ public class FolderDiff implements Serializable {
 		this.ignoreHidden = ignoreHidden;
 	}
 	
-	public void setIncludeFilter(String[] filters) {
+	public void setIncludeFilter(List<Wildcard> filters) {
 		filterEnabled = true;
 		includeFilter = true;
 		this.filters = filters;
 	}
 	
-	public void setExcludeFilter(String[] filters) {
+	public void setExcludeFilter(List<Wildcard> filters) {
 		filterEnabled = true;
 		includeFilter = false;
 		this.filters = filters;		
@@ -99,9 +99,9 @@ public class FolderDiff implements Serializable {
 		// AgeFileFilter is base on lastModifiedDate, but if you copy a file on Windows, the lastModifiedDate is not changed
 		// only the creation date is updated, so we can't use the following AgeFileFiilter
 		// fileFilter.addFileFilter(new AgeFileFilter(time, false /* accept newer */));
-		if ( filterEnabled && null != filters && filters.length > 0 ) {
-			for(int i=0; i<filters.length; i++) {
-				IOFileFilter iof = new SimpleAntWildcardFilter(filters[i]);
+		if ( filterEnabled && null != filters && filters.size() > 0 ) {
+			for(int i=0; i<filters.size(); i++) {
+				IOFileFilter iof = new SimpleAntWildcardFilter(filters.get(i).getFilter());
 				if ( includeFilter ) {
 					fileFilter.addFileFilter(iof);
 				} else {
@@ -168,9 +168,9 @@ public class FolderDiff implements Serializable {
 		// AgeFileFilter is base on lastModifiedDate, but if you copy a file on Windows, the lastModifiedDate is not changed
 		// only the creation date is updated, so we can't use the following AgeFileFiilter
 		//fileFilter.addFileFilter(new AgeFileFilter(time, true /* accept older */));
-		if ( filterEnabled && null != filters && filters.length > 0 ) {
-			for(int i=0; i<filters.length; i++) {
-				IOFileFilter wcf = new SimpleAntWildcardFilter(filters[i]);
+		if ( filterEnabled && null != filters && filters.size() > 0 ) {
+			for(int i=0; i<filters.size(); i++) {
+				IOFileFilter wcf = new SimpleAntWildcardFilter(filters.get(i).getFilter());
 				if ( includeFilter ) {
 					fileFilter.addFileFilter(wcf);
 				} else {

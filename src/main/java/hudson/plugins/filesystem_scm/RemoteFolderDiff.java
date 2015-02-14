@@ -4,6 +4,8 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.remoting.VirtualChannel;
 import hudson.tools.JDKInstaller.Platform;
+import jenkins.security.Roles;
+import org.jenkinsci.remoting.RoleChecker;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -82,7 +84,12 @@ public class RemoteFolderDiff extends FolderDiff {
 			if ( -1 == lastSuccessfulBuildTime ) return Boolean.FALSE;
 			List<FolderDiff.Entry> delFiles = getDeletedFiles(lastSuccessfulBuildTime, true, true);
 			return delFiles.size() > 0;
-		}		
+		}
+
+        public void checkRoles(RoleChecker checker) throws SecurityException {
+            checker.check(this, Roles.MASTER);
+        }
+
 	}
 	
 	public static class CheckOut extends RemoteFolderDiff implements FileCallable< List<FolderDiff.Entry> > {
@@ -97,6 +104,10 @@ public class RemoteFolderDiff extends FolderDiff {
 			files.addAll(newFiles);
 			files.addAll(delFiles);
 			return files;
-		}	
+		}
+
+        public void checkRoles(RoleChecker checker) throws SecurityException {
+            checker.check(this, Roles.MASTER);
+        }
 	}
 }

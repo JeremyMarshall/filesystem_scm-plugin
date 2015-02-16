@@ -157,6 +157,12 @@ public class FSSCM extends SCM {
 		PrintStream log = launcher.getListener().getLogger();
 		EnvVars env = build.getEnvironment(listener);
 		String expandedPath = env.expand(path);
+
+        if( localPath.length() > 0){
+            workspace = new FilePath(workspace, localPath);
+            workspace.mkdirs();
+        }
+
 		log.println("FSSCM.checkout " + expandedPath + " to " + workspace);
 		Boolean b = Boolean.TRUE;
 
@@ -233,6 +239,11 @@ public class FSSCM extends SCM {
 		String expandedPath = path;
 
 		Run<?,?> lastCompletedBuild = project.getLastCompletedBuild();
+
+        if( localPath.length() > 0){
+            workspace = new FilePath(workspace, localPath);
+            workspace.mkdirs();
+        }
 
 		if (lastCompletedBuild != null){
 			EnvVars env = lastCompletedBuild.getEnvironment(listener);
@@ -330,6 +341,12 @@ public class FSSCM extends SCM {
 
     @Override
     public PollingResult compareRemoteRevisionWith(Job<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+
+        if( localPath.length() > 0){
+            workspace = new FilePath(workspace, localPath);
+            workspace.mkdirs();
+        }
+
         if(poll(project, launcher, workspace, listener)) {
             return PollingResult.SIGNIFICANT;
         } else {

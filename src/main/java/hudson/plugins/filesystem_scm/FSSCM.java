@@ -1,5 +1,8 @@
 package hudson.plugins.filesystem_scm;
 
+//import com.thoughtworks.xstream.annotations.XStreamAlias;
+//import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+//import com.thoughtworks.xstream.annotations.XStreamConverter;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -30,8 +33,14 @@ import java.util.Set;
 /**
  * {@link SCM} implementation which watches a file system folder.
  */
+//@XStreamAlias("scm")
 public class FSSCM extends SCM {
 
+    //@XStreamAlias("class")
+    //@XStreamAsAttribute()
+    //private String c = FSSCM.class.getName();
+
+    private boolean important;
 	/** The source folder
 	 * 
 	 */
@@ -216,7 +225,7 @@ public class FSSCM extends SCM {
 		log.println("FSSCM.check completed in " + formatDuration(System.currentTimeMillis()-start));
 		return b;
 	}
-	
+
 	@Override
 	public ChangeLogParser createChangeLogParser() {
 		return new ChangelogSet.XMLSerializer();

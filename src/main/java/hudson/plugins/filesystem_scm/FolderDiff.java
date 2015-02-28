@@ -100,8 +100,8 @@ public class FolderDiff implements Serializable {
 		// only the creation date is updated, so we can't use the following AgeFileFiilter
 		// fileFilter.addFileFilter(new AgeFileFilter(time, false /* accept newer */));
 		if ( filterEnabled && null != filters && filters.size() > 0 ) {
-			for(int i=0; i<filters.size(); i++) {
-				IOFileFilter iof = new SimpleAntWildcardFilter(filters.get(i).getFilter());
+			for(Wildcard w: filters) {
+				IOFileFilter iof = new SimpleAntWildcardFilter(w.getFilter());
 				if ( includeFilter ) {
 					fileFilter.addFileFilter(iof);
 				} else {

@@ -1,5 +1,8 @@
 package hudson.plugins.filesystem_scm;
 
+//import com.thoughtworks.xstream.annotations.XStreamAlias;
+//import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+//import com.thoughtworks.xstream.annotations.XStreamConverter;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -30,8 +33,14 @@ import java.util.Set;
 /**
  * {@link SCM} implementation which watches a file system folder.
  */
+//@XStreamAlias("scm")
 public class FSSCM extends SCM {
 
+    //@XStreamAlias("class")
+    //@XStreamAsAttribute()
+    //private String c = FSSCM.class.getName();
+
+    private boolean important;
 	/** The source folder
 	 * 
 	 */
@@ -157,6 +166,12 @@ public class FSSCM extends SCM {
 		PrintStream log = launcher.getListener().getLogger();
 		EnvVars env = build.getEnvironment(listener);
 		String expandedPath = env.expand(path);
+
+        if( localPath.length() > 0){
+            workspace = new FilePath(workspace, localPath);
+            workspace.mkdirs();
+        }
+
 		log.println("FSSCM.checkout " + expandedPath + " to " + workspace);
 		Boolean b = Boolean.TRUE;
 
@@ -210,7 +225,7 @@ public class FSSCM extends SCM {
 		log.println("FSSCM.check completed in " + formatDuration(System.currentTimeMillis()-start));
 		return b;
 	}
-	
+
 	@Override
 	public ChangeLogParser createChangeLogParser() {
 		return new ChangelogSet.XMLSerializer();
@@ -233,6 +248,11 @@ public class FSSCM extends SCM {
 		String expandedPath = path;
 
 		Run<?,?> lastCompletedBuild = project.getLastCompletedBuild();
+
+        if( localPath.length() > 0){
+            workspace = new FilePath(workspace, localPath);
+            workspace.mkdirs();
+        }
 
 		if (lastCompletedBuild != null){
 			EnvVars env = lastCompletedBuild.getEnvironment(listener);
@@ -330,6 +350,12 @@ public class FSSCM extends SCM {
 
     @Override
     public PollingResult compareRemoteRevisionWith(Job<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+
+        if( localPath.length() > 0){
+            workspace = new FilePath(workspace, localPath);
+            workspace.mkdirs();
+        }
+
         if(poll(project, launcher, workspace, listener)) {
             return PollingResult.SIGNIFICANT;
         } else {

@@ -1,9 +1,7 @@
 package hudson.plugins.filesystem_scm.dsl;
 
-import hudson.Extension;
 import hudson.plugins.filesystem_scm.Wildcard;
-import org.jenkinsci.plugins.jobdsl.stub.annotations.dsl.Method;
-import org.jenkinsci.plugins.jobdsl.stub.annotations.dsl.Parameter;
+import javaposse.jobdsl.dsl.Context;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,8 +11,8 @@ import java.util.List;
 /**
  * Created by jeremymarshall on 31/01/2015.
  */
-@Extension
-public class DslSCMClosure extends org.jenkinsci.plugins.jobdsl.stub.annotations.dsl.Closure{
+
+public class DslSCMContext implements Context {
 
     String path;
     String localPath;
@@ -24,48 +22,27 @@ public class DslSCMClosure extends org.jenkinsci.plugins.jobdsl.stub.annotations
     List<Wildcard> wildcards = Collections.<Wildcard>emptyList();
     String filterType = "include";
 
-    @Override
-    public String getName(){
-        return "FSSCM closure";
-    }
-
-    @Override
-    public String getDescription(){
-        return "FSSCM scm closure";
-    }
-
-    @Override
-    public final boolean hasMethods(){
-        return true;
-    };
-
-    @Method(description="Set Path")
-    public void path(@Parameter(description="The path to read from") String path) {
+    public void path(String path) {
         this.path = path;
     }
 
-    @Method(description="Set Local Path")
-    public void localPath(@Parameter(description="The directory in the workspace to write to") String localPath) {
+    public void localPath( String localPath) {
         this.localPath = localPath;
     }
 
-    @Method(description="Clear workspace")
-    public void clearWorkspace(@Parameter(description="Clear directory before copying") boolean clear) {
+    public void clearWorkspace( boolean clear) {
         this.clearWorkspace = clear;
     }
 
-    @Method(description="Copy hidden files")
-    public void copyHidden(@Parameter(description="Copy hidden files") boolean copyHidden) {
+    public void copyHidden( boolean copyHidden) {
         this.copyHidden = copyHidden;
     }
 
-    @Method(description="Filter files")
-    public void filter(@Parameter(description="include or exclude") String type, @Parameter(description="vaargs of wildcards to add") String... filters)  throws UnknownFilterType {
+    public void filter(String type, String... filters)  throws UnknownFilterType {
         filter(type, Arrays.asList(filters));
     }
 
-    @Method(description="Filter files")
-    public void filter(@Parameter(description="include or exclude") String type, @Parameter(description="list of wildcards to add") List<String> filters)  throws UnknownFilterType{
+    public void filter(String type, List<String> filters)  throws UnknownFilterType{
         this.filterEnabled = true;
         if (type.equalsIgnoreCase("include")) {
             this.filterType = "include";
